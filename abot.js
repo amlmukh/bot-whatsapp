@@ -436,6 +436,11 @@ ${symbol1} ${prefix}stickerwm [image]
 ${symbol1} ${prefix}smeme [image] 
 ${symbol1} ${prefix}emojimix [emoji1+emoji2] 
 
+*DOWNLOADER*
+${symbol1} ${prefix}ytmp3 [url]
+${symbol1} ${prefix}tiktokdl [url] 
+${symbol1} ${prefix}ttdl [url
+
 *OWNER*
 ${symbol1} ${prefix}self 
 ${symbol1} ${prefix}public 
@@ -1025,16 +1030,27 @@ let teks = `══✪〘 *👥 Tag All* 〙✪══
             //Fiture Downloader
             case 'ytmp3' : {
                 if (!url) throw `Example : ${prefix + command} url`
-                m.reply(mess.waitdl)
                 let ytmp3 = await fetchJson(`https://saipulanuar.ga/api/download/ytmp3?url=${url}`)
+                reply(`*YTMP3 DOWNLOAD*
+
+*title:* ${ytmp3.result.title}
+*channel:* ${ytmp3.result.channel}
+*published:* ${ytmp3.result.published}
+*views:* ${ytmp3.result.views}
+*type:* audio/mp3
+_Sedang mengirim audio..._`)
                 abot.sendMessage(m.chat, { audio: { url: ytmp3.result.url }, mimetype: 'audio/mpeg', caption: `Done` }, { quoted: m })
             }
             break
 
             case 'tiktokdl' : case 'ttmp4' : case 'ttdl': {
                 if (!url) throw  `masukan command ${prefix + command} url`
-                m.reply(mess.waitdl)
                 let ttdl = await fetchJson(`https://saipulanuar.ga/api/download/tiktok?url=${url}`)
+                reply(`*TIKTOK DOWNLOAD*
+*channel:* ${ttdl.result.username}
+*desc:* ${ttdl.result.description}
+*type:* video/mp4
+_Sedang mengirim video..._`)
                 abot.sendMessage(m.chat, { video: { url: ttdl.result.video }, mimetype: 'video/mp4', caption: `Done` }, { quoted: m })
             }
             break
