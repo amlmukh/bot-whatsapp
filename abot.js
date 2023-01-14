@@ -1047,7 +1047,7 @@ _Sedang mengirim audio..._`)
                 if (!url) throw  `masukan command ${prefix + command} url`
                 let ttdl = await fetchJson(`https://saipulanuar.ga/api/download/tiktok?url=${url}`)
                 reply(`*TIKTOK DOWNLOAD*
-*channel:* ${ttdl.result.username}
+*username:* ${ttdl.result.username}
 *desc:* ${ttdl.result.description}
 *type:* video/mp4
 _Sedang mengirim video..._`)
