@@ -28,7 +28,7 @@
 - Open AI
 - Etc
 
-# Thanks for free API
+# API use
 
 <a href="https://beta.openai.com/account/api-keys">OpenAI</a><br>
 <a href="https://saipulanuar.ga/">KING OF BEAR</a><br>
