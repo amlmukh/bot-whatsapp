@@ -394,14 +394,6 @@ Wib: ${barat} WIB
 Wita: ${tengah} WITA
 Wit: ${timur} WIT
 
-*INFO CMD*
-Vip
-Premium
-Free
-Limit
-For Group
-For Owner
-
 *FEATURES*
 *OPEN AI BOT*
 ${symbol1} ${prefix}ai [text]
