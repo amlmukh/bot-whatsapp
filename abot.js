@@ -1031,10 +1031,10 @@ let teks = `══✪〘 *👥 Tag All* 〙✪══
             }
             break
 
-            case 'tiktokdl' : {
+            case 'tiktokdl' : case 'ttmp4' : case 'ttdl': {
                 if (!url) throw  `masukan command ${prefix + command} url`
-                let ttdl = await fetchJson(`https://saipulanuar.ga/api/download/tiktok?url=${url}`)
                 m.reply(mess.waitdl)
+                let ttdl = await fetchJson(`https://saipulanuar.ga/api/download/tiktok?url=${url}`)
                 abot.sendMessage(m.chat, { video: { url: ttdl.result.video }, mimetype: 'video/mp4', caption: `Done` }, { quoted: m })
             }
             break
