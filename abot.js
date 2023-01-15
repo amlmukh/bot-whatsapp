@@ -432,6 +432,9 @@ ${symbol1} ${prefix}emojimix [emoji1+emoji2]
 ${symbol1} ${prefix}ytmp3 [url]
 ${symbol1} ${prefix}tiktokdl [url] 
 ${symbol1} ${prefix}ttdl [url
+${symbol1} ${prefix}fbdl [url
+${symbol1} ${prefix}fbmp4 [url
+
 
 *OWNER*
 ${symbol1} ${prefix}self 
@@ -1044,6 +1047,17 @@ _Sedang mengirim audio..._`)
 *type:* video/mp4
 _Sedang mengirim video..._`)
                 abot.sendMessage(m.chat, { video: { url: ttdl.result.video }, mimetype: 'video/mp4', caption: `Done` }, { quoted: m })
+            }
+            break
+
+            case 'fbdl' : case 'fbmp4' : {
+                if (!url) throw  `masukan command ${prefix + command} url`
+                let fbdl = await fetchJson(`https://saipulanuar.ga/api/download/fb?url=${url}`)
+                reply(`*FACEBOOK DOWNLOAD*
+*Judul:* ${fbdl.result.title}
+*type:* video/mp4
+_Sedang mengirim video..._`)
+                abot.sendMessage(m.chat, { video: { url: fbdl.result.hd }, mimetype: 'video/mp4', caption: `Done` }, { quoted: m })
             }
             break
 
