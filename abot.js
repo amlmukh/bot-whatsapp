@@ -431,9 +431,10 @@ ${symbol1} ${prefix}emojimix [emoji1+emoji2]
 *DOWNLOADER*
 ${symbol1} ${prefix}ytmp3 [url]
 ${symbol1} ${prefix}tiktokdl [url] 
-${symbol1} ${prefix}ttdl [url
-${symbol1} ${prefix}fbdl [url
-${symbol1} ${prefix}fbmp4 [url
+${symbol1} ${prefix}ttdl [url]
+${symbol1} ${prefix}fbdl [url]
+${symbol1} ${prefix}fbmp4 [url]
+${symbol1} ${prefix}pinterest [gambar yang ingin dicari]
 
 
 *OWNER*

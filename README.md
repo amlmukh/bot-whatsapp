@@ -22,6 +22,7 @@
 - Tiktok Downloader
 - Youtube mp3 Downloader
 - Facebook Downloader
+- Pinterest Searching
 
 ## Library Use
 
