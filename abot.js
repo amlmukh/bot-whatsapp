@@ -1061,6 +1061,16 @@ _Sedang mengirim video..._`)
             }
             break
 
+            case 'pinterest': {
+            if (!text) throw  `masukan command ${prefix + command} query`
+            m.reply(mess.wait)
+		    let { pinterest } = require('./lib/scraper')
+                anu = await pinterest(text)
+                result = anu[Math.floor(Math.random() * anu.length)]
+                abot.sendMessage(m.chat, { image: { url: result }, caption: '• Media Url : '+result }, { quoted: m })
+            }
+            break
+
         //Ai Fiture
         case 'ai':
             try {
