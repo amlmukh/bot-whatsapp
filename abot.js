@@ -1887,23 +1887,21 @@ _Sedang mengirim video..._`);
         break;
 
       case "addprem":
-        if (!isOwner) return reply(mess.owner);
-        if (!args[0])
-          return reply(
-            `Penggunaan ${prefix + command} nomor\nContoh ${
-              prefix + command
-            } 6285807264974`
+        {
+          if (!isOwner) return reply(mess.owner);
+          if (!text) return reply("*Contoh:*\n#addprem 628xxx");
+          var number_one = text + "@s.whatsapp.net";
+          if (cekUser("id", number_one) == null)
+            return reply("User tersebut tidak terdaftar di database");
+          if (cekUser("premium", number_one) == true)
+            return reply("User tersebut sudah premium");
+          setUser("±premium", number_one, true);
+          reply(
+            `*PREMIUM*\n*ID:* @${number_one.split("@")[0]}\n*Status:* aktif`
           );
-        prrkek = q.split("|")[0].replace(/[^0-9]/g, "") + `@s.whatsapp.net`;
-        let ceknya = await kayla.onWhatsApp(prrkek);
-        if (ceknya.length == 0)
-          return reply(
-            `Masukkan Nomor Yang Valid Dan Terdaftar Di WhatsApp!!!`
-          );
-        prem.push(prrkek);
-        fs.writeFileSync("./database/premium.json", JSON.stringify(prem));
-        reply(`Nomor ${prrkek} Telah Menjadi Premium!`);
+        }
         break;
+
       // End Cmd
       default:
         if (budy.startsWith("=>")) {
