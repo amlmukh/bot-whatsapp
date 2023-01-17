@@ -37,7 +37,7 @@ global.mess = {
   wait: "Wait...",
   waitdl: "Proses..., mohon ditunggu mungkin akan memakan sedikit waktu :)",
   notregist:
-    "Kamu belum terdaftar di database bot silahkan daftar terlebih dahulu",
+    "Kamu belum terdaftar di database bot silahkan daftar terlebih dahulu dengan cara #verify",
   premium: "Kamu Bukan User Premium, Beli Sana Ke Owner Bot",
   endLimit:
     "Limit Harian Anda Telah Habis, Limit Akan Direset Setiap Pukul 00:00 WIB.",

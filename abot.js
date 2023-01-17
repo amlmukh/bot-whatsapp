@@ -662,6 +662,11 @@ Wita: ${tengah} WITA
 Wit: ${timur} WIT`;
           let buttons = [
             {
+              buttonId: `cmd`,
+              buttonText: { displayText: "Menu" },
+              type: 1,
+            },
+            {
               buttonId: `donasi`,
               buttonText: { displayText: "Donasi" },
               type: 1,
