@@ -448,20 +448,8 @@ abot.ev.on('messages.upsert', async chatUpdate => {
      * @returns
      */
     abot.send5ButImg = async (jid , text = '' , footer = '', img, but = [], buff, options = {}) =>{
-        let resize = await abot.reSize(buff, 300, 150)
-        let message = await prepareWAMessageMedia({ image: img, jpegThumbnail: resize }, { upload: abot.waUploadToServer })
-        var template = generateWAMessageFromContent(jid, proto.Message.fromObject({
-        templateMessage: {
-        hydratedTemplate: {
-        imageMessage: message.imageMessage,
-               "hydratedContentText": text,
-               "hydratedFooterText": footer,
-               "hydratedButtons": but
-            }
-            }
-            }), options)
-            abot.relayMessage(jid, template.message, { messageId: template.key.id })
-    }
+        abot.sendMessage(jid, { image: img, caption: text, footer: footer, templateButtons: but, ...options })
+        }
 
     /** Send Button 5 Video
      *

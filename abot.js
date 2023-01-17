@@ -2176,6 +2176,15 @@ _Sedang mengirim video..._`);
         }
         break;
 
+      case "setnamabot":
+        {
+          if (!isOwner) throw mess.owner;
+          if (!text) throw `Example : ${prefix + command} WhatsApp ✅`;
+          let name = await abot.updateProfileName(text);
+          m.reply(`Successfully renamed bot to ${name}`);
+        }
+        break;
+
       case "join":
         {
           if (!isOwner) return reply(mess.owner);
@@ -2219,6 +2228,75 @@ _Sedang mengirim video..._`);
           reply(
             `*PREMIUM*\n*ID:* @${number_one.split("@")[0]}\n*Status:* tidak`
           );
+        }
+        break;
+
+      case "setexif":
+        {
+          if (!isOwner) throw mess.owner;
+          if (!text) throw `Example : ${prefix + command} packname|author`;
+          global.packname = text.split("|")[0];
+          global.author = text.split("|")[1];
+          m.reply(
+            `Exif berhasil diubah menjadi\n\n⭔ Packname : ${global.packname}\n⭔ Author : ${global.author}`
+          );
+        }
+        break;
+
+      case "bcgc":
+      case "bcgroup":
+        {
+          if (!isOwner) throw mess.owner;
+          if (!text)
+            throw `Text mana?\n\nExample : ${prefix + command} fatih-san`;
+          let getGroups = await abot.groupFetchAllParticipating();
+          let groups = Object.entries(getGroups)
+            .slice(0)
+            .map((entry) => entry[1]);
+          let anu = groups.map((v) => v.id);
+          m.reply(
+            `Mengirim Broadcast Ke ${anu.length} Group Chat, Waktu Selesai ${
+              anu.length * 1.5
+            } detik`
+          );
+          for (let i of anu) {
+            await sleep(1500);
+            let btn = [
+              {
+                urlButton: {
+                  displayText: "Source Code",
+                  url: "https://github.com/DikaArdnt/Hisoka-Morou",
+                },
+              },
+              {
+                callButton: {
+                  displayText: "Number Phone Owner",
+                  phoneNumber: "+62 882-9202-4190",
+                },
+              },
+              {
+                quickReplyButton: {
+                  displayText: "Status Bot",
+                  id: "ping",
+                },
+              },
+              {
+                quickReplyButton: {
+                  displayText: "Contact Owner",
+                  id: "owner",
+                },
+              },
+              {
+                quickReplyButton: {
+                  displayText: "Script",
+                  id: "sc",
+                },
+              },
+            ];
+            let txt = `「 Broadcast Bot 」\n\n${text}`;
+            abot.send5ButImg(i, txt, abot.user.name, global.thumb, btn);
+          }
+          m.reply(`Sukses Mengirim Broadcast Ke ${anu.length} Group`);
         }
         break;
 
