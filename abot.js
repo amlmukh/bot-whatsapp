@@ -1,4 +1,5 @@
 require("./set.js");
+require("./lib/listmenu");
 const {
   BufferJSON,
   WA_DEFAULT_EPHEMERAL,
@@ -47,7 +48,20 @@ const {
   parseMention,
   getRandom,
   getGroupAdmins,
+  makeid,
 } = require("./lib/myfunc");
+const {
+  media_JSON,
+  mess_JSON,
+  setting_JSON,
+  antilink_JSON,
+  db_user_JSON,
+  server_eror_JSON,
+  welcome_JSON,
+  db_menfes_JSON,
+  db_respon_list_JSON,
+  auto_downloadTT_JSON,
+} = require("./lib/Data_Location.js");
 const { jadibot, conns } = require("./lib/jadibot");
 
 // Time
@@ -59,36 +73,31 @@ const youtube = "https://youtube.com/c/ahmuq";
 const wa = `0@s.whatsapp.net`;
 const owner = global.owner + "@s.whatsapp.net";
 const nyoutube = "muq";
+const db_user = db_user_JSON;
 var time = timeZone.tz("Asia/Jakarta").format("HH:mm:ss");
 
 // read database
-let user = JSON.parse(fs.readFileSync("./database/user.json"));
+let user = JSON.parse(fs.readFileSync("./database/pengguna.json"));
 
 const cekUser = (satu, dua) => {
   let x1 = false;
-  Object.keys(user).forEach((i) => {
-    if (user[i].id == dua) {
+  Object.keys(db_user).forEach((i) => {
+    if (db_user[i].id == dua) {
       x1 = i;
     }
   });
   if (x1 !== false) {
     if (satu == "id") {
-      return user[x1].id;
+      return db_user[x1].id;
     }
     if (satu == "name") {
-      return user[x1].name;
+      return db_user[x1].name;
     }
-    if (satu == "umur") {
-      return user[x1].umur;
+    if (satu == "seri") {
+      return db_user[x1].seri;
     }
-    if (satu == "gender") {
-      return user[x1].gender;
-    }
-    if (satu == "resi") {
-      return user[x1].resi;
-    }
-    if (satu == "registerOn") {
-      return user[x1].registerOn;
+    if (satu == "premium") {
+      return db_user[x1].premium;
     }
   }
   if (x1 == false) {
@@ -96,7 +105,7 @@ const cekUser = (satu, dua) => {
   }
 };
 
-module.exports = abot = async (abot, m, store, chatUpdate) => {
+module.exports = abot = async (abot, m, store, chatUpdate, mek) => {
   try {
     var body =
       m.mtype === "conversation"
@@ -164,11 +173,12 @@ module.exports = abot = async (abot, m, store, chatUpdate) => {
       .map((v) => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net")
       .includes(m.sender);
     const myNumber = m.sender == botNumber ? true : false;
-    const sender = m.isGroup
-      ? mek.key.participant
-        ? mek.key.participant
-        : mek.participant
-      : mek.key.remoteJid;
+    const isGroup = m.key.remoteJid.endsWith("@g.us");
+    const sender = isGroup
+      ? m.key.participant
+        ? m.key.participant
+        : m.participant
+      : m.key.remoteJid;
     //const isRegist = cekUser(sender)
 
     const color = (text, color) => {
@@ -184,12 +194,7 @@ module.exports = abot = async (abot, m, store, chatUpdate) => {
     const groupAdmins = m.isGroup ? await getGroupAdmins(participants) : "";
     const isBotAdmins = m.isGroup ? groupAdmins.includes(botNumber) : false;
     const isAdmins = m.isGroup ? groupAdmins.includes(m.sender) : false;
-    const isPremium =
-      isOwner ||
-      global.premium
-        .map((v) => v.replace(/[^0-9]/g, "") + "@s.whatsapp.net")
-        .includes(m.sender) ||
-      false;
+    const isPremium = isOwner || cekUser("premium", sender) == true;
 
     // Limit
     try {
@@ -265,6 +270,7 @@ module.exports = abot = async (abot, m, store, chatUpdate) => {
       console.error(err);
     }
 
+    // OpenAI Setting
     if (setting.autoAI) {
       if (budy) {
         try {
@@ -291,6 +297,20 @@ module.exports = abot = async (abot, m, store, chatUpdate) => {
           console.log(err);
           m.reply("Maaf, sepertinya ada yang error");
         }
+      }
+    }
+
+    function mentions(teks, mems = [], id) {
+      if (id == null || id == undefined || id == false) {
+        let res = abot.sendMessage(from, { text: teks, mentions: mems });
+        return res;
+      } else {
+        let res = abot.sendMessage(
+          from,
+          { text: teks, mentions: mems },
+          { quoted: msg }
+        );
+        return res;
       }
     }
 
@@ -378,6 +398,18 @@ module.exports = abot = async (abot, m, store, chatUpdate) => {
     // Public & Self
     if (!abot.public) {
       if (!m.key.fromMe) return;
+    }
+
+    async function sendAbotMessage(chatId, message, options = {}) {
+      let generate = await generateWAMessage(chatId, message, options);
+      let type2 = getContentType(generate.message);
+      if ("contextInfo" in options)
+        generate.message[type2].contextInfo = options?.contextInfo;
+      if ("contextInfo" in message)
+        generate.message[type2].contextInfo = message?.contextInfo;
+      return await abot.relayMessage(chatId, generate.message, {
+        messageId: generate.key.id,
+      });
     }
 
     // Push Message To Console && Auto Read
@@ -492,451 +524,106 @@ Selama ${clockString(new Date() - user.afkTime)}`
       return list[Math.floor(list.length * Math.random())];
     }
 
+    const seactions = [
+      {
+        title: `𝐒𝐈𝐋𝐀𝐇𝐊𝐀𝐍 𝐏𝐈𝐋𝐈𝐇 𝐃𝐈 𝐁𝐀𝐖𝐀𝐇`,
+        rows: [
+          { title: `⊟ All menu`, rowId: `allmenu` },
+          { title: `⊟ Owner menu`, rowId: `ownermenu` },
+          { title: `⊟ Open AI`, rowId: `openai` },
+          { title: `⊟ Download menu`, rowId: `downloadmenu` },
+          { title: `⊟ Group menu`, rowId: `groupmenu` },
+          { title: `⊟ Converter Menu`, rowId: `convertmenu` },
+        ],
+      },
+    ];
+
+    const listMenuMessage = {
+      text: `Hai @${
+        sender.split("@")[0]
+      } Pencet Button List Menunya Nya Di Bawah Ya`,
+      buttonText: "🪀 MENU 🪀",
+      sections: seactions,
+      listType: 1,
+    };
+
+    const backMenu = {
+      buttonText: "🪀 OTHER MENU 🪀",
+      sections: seactions,
+      listType: 1,
+    };
+
     // End
     switch (command) {
       // Start Cmd
-      case "daftar":
-      case "registrasi":
+      case "verify":
       case "register":
-      case "registered":
+      case "daftar":
       case "regis":
         {
-          let mm = args.join(" ");
-          let m1 = mm.split("|")[0];
-          let m2 = mm.split("|")[1];
-          let m3 = mm.split("|")[2];
-          if (m.isGroup) {
-            m.reply(
-              "🇮🇩 _Bot telah mengirimkan list pendaftaran ke private chat, silahkan selesaikan agar dapat menggunakan fitur bot._\n\n🇺🇸 _The bot has sent a registration list to the private chat, please complete it so you can use the bot feature._"
-            );
-            if (!m2)
-              return abot.sendMessage(
-                sender,
-                {
-                  text: `🇮🇩 _Hi @${
-                    sender.split("@")[0]
-                  } silahkan pilih umur kamu dengan cara pencet dibawah ini._\n\n🇺🇸 _Hi @${
-                    sender.split("@")[0]
-                  } please select your age by pressing the button below._`,
-                  footer: `${namabot} © 2022`,
-                  buttonText: "Click Here",
-                  sections: [
-                    {
-                      title: "📆Select Your Age Here!!",
-                      rows: [
-                        {
-                          title: "🎰 Random Years",
-                          rowId:
-                            "#daftar " +
-                            pushname +
-                            "|" +
-                            pickRandom([
-                              "5",
-                              "6",
-                              "7",
-                              "8",
-                              "9",
-                              "10",
-                              "11",
-                              "12",
-                              "13",
-                              "14",
-                              "15",
-                              "16",
-                              "17",
-                              "18",
-                              "19",
-                              "20",
-                              "21",
-                              "22",
-                              "23",
-                              "24",
-                              "25",
-                              "26",
-                              "27",
-                              "28",
-                              "29",
-                              "30",
-                              "31",
-                              "32",
-                              "34",
-                              "35",
-                              "36",
-                              "37",
-                              "38",
-                              "39",
-                              "40",
-                              "41",
-                              "42",
-                              "43",
-                              "44",
-                              "45",
-                              "46",
-                              "47",
-                              "48",
-                              "49",
-                              "50",
-                              ",51",
-                              "52",
-                              "53",
-                              "54",
-                              "55",
-                              "56",
-                              "57",
-                              "58",
-                              "59",
-                              "60",
-                            ]),
-                        },
-                        {
-                          title: "💫60• Years",
-                          rowId: "#daftar " + pushname + "|" + "60",
-                        },
-                        {
-                          title: "💫59• Years",
-                          rowId: "#daftar " + pushname + "|" + "59",
-                        },
-                        {
-                          title: "💫58• Years",
-                          rowId: "#daftar " + pushname + "|" + "58",
-                        },
-                        {
-                          title: "💫57• Years",
-                          rowId: "#daftar " + pushname + "|" + "57",
-                        },
-                        {
-                          title: "💫56• Years",
-                          rowId: "#daftar " + pushname + "|" + "56",
-                        },
-                        {
-                          title: "💫55• Years",
-                          rowId: "#daftar " + pushname + "|" + "56",
-                        },
-                        {
-                          title: "💫54• Years",
-                          rowId: "#daftar " + pushname + "|" + "54",
-                        },
-                        {
-                          title: "💫53• Years",
-                          rowId: "#daftar " + pushname + "|" + "53",
-                        },
-                        {
-                          title: "💫52• Years",
-                          rowId: "#daftar " + pushname + "|" + "52",
-                        },
-                        {
-                          title: "💫51• Years",
-                          rowId: "#daftar " + pushname + "|" + "51",
-                        },
-                        {
-                          title: "💫50• Years",
-                          rowId: "#daftar " + pushname + "|" + "50",
-                        },
-                        {
-                          title: "💫49• Years",
-                          rowId: "#daftar " + pushname + "|" + "49",
-                        },
-                        {
-                          title: "💫48• Years",
-                          rowId: "#daftar " + pushname + "|" + "48",
-                        },
-                        {
-                          title: "💫47• Years",
-                          rowId: "#daftar " + pushname + "|" + "47",
-                        },
-                        {
-                          title: "💫46• Years",
-                          rowId: "#daftar " + pushname + "|" + "46",
-                        },
-                        {
-                          title: "💫45• Years",
-                          rowId: "#daftar " + pushname + "|" + "45",
-                        },
-                        {
-                          title: "💫44• Years",
-                          rowId: "#daftar " + pushname + "|" + "44",
-                        },
-                        {
-                          title: "💫43• Years",
-                          rowId: "#daftar " + pushname + "|" + "43",
-                        },
-                        {
-                          title: "💫42• Years",
-                          rowId: "#daftar " + pushname + "|" + "42",
-                        },
-                        {
-                          title: "💫41• Years",
-                          rowId: "#daftar " + pushname + "|" + "41",
-                        },
-                        {
-                          title: "💫40• Years",
-                          rowId: "#daftar " + pushname + "|" + "40",
-                        },
-                        {
-                          title: "💫39• Years",
-                          rowId: "#daftar " + pushname + "|" + "39",
-                        },
-                        {
-                          title: "💫38• Years",
-                          rowId: "#daftar " + pushname + "|" + "38",
-                        },
-                        {
-                          title: "💫37• Years",
-                          rowId: "#daftar " + pushname + "|" + "37",
-                        },
-                        {
-                          title: "💫36• Years",
-                          rowId: "#daftar " + pushname + "|" + "36",
-                        },
-                        {
-                          title: "💫35• Years",
-                          rowId: "#daftar " + pushname + "|" + "35",
-                        },
-                        {
-                          title: "💫34• Years",
-                          rowId: "#daftar " + pushname + "|" + "34",
-                        },
-                        {
-                          title: "💫33• Years",
-                          rowId: "#daftar " + pushname + "|" + "33",
-                        },
-                        {
-                          title: "💫32• Years",
-                          rowId: "#daftar " + pushname + "|" + "32",
-                        },
-                        {
-                          title: "💫31• Years",
-                          rowId: "#daftar " + pushname + "|" + "31",
-                        },
-                        {
-                          title: "💫30• Years",
-                          rowId: "#daftar " + pushname + "|" + "30",
-                        },
-                        {
-                          title: "💫29• Years",
-                          rowId: "#daftar " + pushname + "|" + "39",
-                        },
-                        {
-                          title: "💫28• Years",
-                          rowId: "#daftar " + pushname + "|" + "28",
-                        },
-                        {
-                          title: "💫27• Years",
-                          rowId: "#daftar " + pushname + "|" + "27",
-                        },
-                        {
-                          title: "💫26• Years",
-                          rowId: "#daftar " + pushname + "|" + "26",
-                        },
-                        {
-                          title: "💫25• Years",
-                          rowId: "#daftar " + pushname + "|" + "25",
-                        },
-                        {
-                          title: "💫24• Years",
-                          rowId: "#daftar " + pushname + "|" + "24",
-                        },
-                        {
-                          title: "💫23• Years",
-                          rowId: "#daftar " + pushname + "|" + "23",
-                        },
-                        {
-                          title: "💫22• Years",
-                          rowId: "#daftar " + pushname + "|" + "22",
-                        },
-                        {
-                          title: "💫21• Years",
-                          rowId: "#daftar " + pushname + "|" + "21",
-                        },
-                        {
-                          title: "💫20• Years",
-                          rowId: "#daftar " + pushname + "|" + "20",
-                        },
-                        {
-                          title: "💫19• Years",
-                          rowId: "#daftar " + pushname + "|" + "19",
-                        },
-                        {
-                          title: "💫18• Years",
-                          rowId: "#daftar " + pushname + "|" + "18",
-                        },
-                        {
-                          title: "💫17• Years",
-                          rowId: "#daftar " + pushname + "|" + "17",
-                        },
-                        {
-                          title: "💫16• Years",
-                          rowId: "#daftar " + pushname + "|" + "16",
-                        },
-                        {
-                          title: "💫15• Years",
-                          rowId: "#daftar " + pushname + "|" + "15",
-                        },
-                        {
-                          title: "💫14• Years",
-                          rowId: "#daftar " + pushname + "|" + "14",
-                        },
-                        {
-                          title: "💫13• Years",
-                          rowId: "#daftar " + pushname + "|" + "13",
-                        },
-                        {
-                          title: "💫12• Years",
-                          rowId: "#daftar " + pushname + "|" + "12",
-                        },
-                        {
-                          title: "💫11• Years",
-                          rowId: "#daftar " + pushname + "|" + "11",
-                        },
-                        {
-                          title: "💫10• Years",
-                          rowId: "#daftar " + pushname + "|" + "10",
-                        },
-                        {
-                          title: "💫9• Years",
-                          rowId: "#daftar " + pushname + "|" + "9",
-                        },
-                        {
-                          title: "💫8• Years",
-                          rowId: "#daftar " + pushname + "|" + "8",
-                        },
-                        {
-                          title: "💫7• Years",
-                          rowId: "#daftar " + pushname + "|" + "7",
-                        },
-                        {
-                          title: "💫6• Years",
-                          rowId: "#daftar " + pushname + "|" + "6",
-                        },
-                        {
-                          title: "💫5• Years",
-                          rowId: "#daftar " + pushname + "|" + "5",
-                        },
-                      ],
-                    },
-                  ],
-                  mentions: [`${sender}`],
-                },
-                { quoted: ftroli }
-              );
-          }
-          if (!m1) return m.reply(`Ex : ${prefix + command} Nama|umur`);
-          if (m1 && !m2 && !m3) {
-            user.push({ id: sender, name: m1 });
-            fs.writeFileSync("./database/user.json", JSON.stringify(user));
-          }
-          if (m1 && m2 && !m3) {
-            user.push({ id: sender, name: m1, umur: m2 });
-            fs.writeFileSync("./database/user.json", JSON.stringify(user));
-          }
-          if (!m3)
-            return abot.sendMessage(
-              sender,
-              {
-                text: `🇮🇩 _Hi @${
-                  sender.split("@")[0]
-                } silahkan pilih jenis kelamin kamu dengan cara pencet dibawah ini._\n\n🇺🇸 _Hi @${
-                  sender.split("@")[0]
-                } please select your gender by pressing the button below._`,
-                footer: `${namabot} © 2022`,
-                buttonText: "Click Here",
-                sections: [
-                  {
-                    title: "♂Select Your Gender Here!!",
-                    rows: [
-                      {
-                        title: "♂ Male / Cowo",
-                        rowId:
-                          "#daftar " +
-                          pushname +
-                          "|" +
-                          cekUser("umur", sender) +
-                          "|" +
-                          pickRandom(["Laki-Laki", "Cowo", "Pria"]),
-                      },
-                      {
-                        title: "♀ Female / Cewe",
-                        rowId:
-                          "#daftar " +
-                          pushname +
-                          "|" +
-                          cekUser("umur", sender) +
-                          "|" +
-                          pickRandom(["Perempuan", "Cewe", "Wanita"]),
-                      },
-                    ],
-                  },
-                ],
-                mentions: [`${sender}`],
-              },
-              { quoted: fkontak }
-            );
-          if (m1 && m2 && m3) {
-            user.push({ id: sender, name: m1, umur: m2, gender: m3 });
-            fs.writeFileSync("./database/user.json", JSON.stringify(user));
-          }
-          try {
-            ppuser = await abot.profilePictureUrl(num, "image");
-          } catch {
-            ppuser = "https://tinyurl.com/yx93l6da";
-          }
-          const nomor_resi = require("crypto")
-            .randomBytes(5)
-            .toString("hex")
-            .toUpperCase();
-          let resiNya = `${nomor_resi}`;
-          let registerOnNya = `${hariini}`;
-          let teks_daftar = `*──────❲ VERIFIKASI SUKSES ❳──────*
-*Nama :* ${m1}
-*Umur :* ${m2} Tahun
-*Gender :* ${m3}
-*Resi :* ${resiNya}
-*Register On :* ${registerOnNya}
-*Nomor :* ${sender.split("@")[0]}
-*Status :* ${isOwner ? "Owner" : "User"} ${namabot}
-*User Ke :* ${user.length}
-*Hit Cmd :* 1
+          if (cekUser("id", sender) !== null)
+            return reply("Kamu sudah terdaftar !!");
+          var res_us = `${makeid(10)}`;
+          var user_name = `#GR${makeid(5)}`;
+          let object_user = {
+            id: sender,
+            name: user_name,
+            seri: res_us,
+            premium: false,
+          };
+          db_user.push(object_user);
+          fs.writeFileSync(
+            "./database/pengguna.json",
+            JSON.stringify(db_user, 2, null)
+          );
+          mentions(`𝖬𝖾𝗆𝗎𝖺𝗍 𝖴𝗌𝖾𝗋 @${sender.split("@")[0]}`, [sender]);
+          await sleep(1500);
+          var verify_teks = `───「 𝗧𝗘𝗥𝗩𝗘𝗥𝗜𝗙𝗜𝗞𝗔𝗦𝗜 」────
 
-Silahkan ketik *#rules* sebelum memulai bot.`;
-          if (m1 && m2 && m3) {
-            user.push({
-              id: sender,
-              name: m1,
-              umur: m2,
-              gender: m3,
-              resi: resiNya,
-              registerOn: registerOnNya,
-            });
-            fs.writeFileSync("./database/user.json", JSON.stringify(user));
-            abot.sendMessage(
-              sender,
+○ ID : @${sender.split("@")[0]}
+○ Name : ${user_name}
+○ Seri : ${res_us}
+
+silahkan ketik #rules
+untuk membaca rules bot
+`;
+          var buttonMessage = {
+            text: verify_teks,
+            footer: "Klik button untuk melihat menu",
+            mentions: [sender],
+            buttons: [
               {
-                text: `*Memuat Data* › @${sender.split("@")[0]}`,
-                mentions: [`${sender.split("@")[0]}@s.whatsapp.net`],
+                buttonId: "#menu",
+                buttonText: { displayText: "️⋮☰ 𝗠𝗘𝗡𝗨" },
+                type: 1,
               },
-              { quoted: m }
-            );
-            abot.sendMessage(
-              sender,
-              { image: { url: ppuser }, caption: teks_daftar },
-              { quoted: m }
-            );
-          }
+            ],
+            headerType: 1,
+          };
+          abot.sendMessage(from, buttonMessage, { quoted: m });
         }
         break;
+
       case "menu":
       case "help":
       case "m":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           let me = m.sender;
           let menu = `
 *Hello ${pushname} 👋, ${sayyingTime}*,`;
           let menunya = `
 *INFO USER*
 Name: ${pushname}
-Number: @${me.split("@")[0]}
+Nomor: @${me.split("@")[0]}
+User pada database : ${Object.keys(global.db.data.users).length} User
 Premium: ${isPremium ? "✅" : `❌`}
 Limit: ${isPremium ? "Unlimited" : `${db.data.users[m.sender].limit}`}
+User Registered : ${
+            Object.values(global.db.data.users).filter(
+              (user) => user.registered == true
+            ).length
+          } Users
 
 *INFO BOT*
 Nama Bot: ${global.namabot}
@@ -948,59 +635,11 @@ Prefix:「 MULTI-PREFIX 」
 Date: ${hariini}
 Wib: ${barat} WIB
 Wita: ${tengah} WITA
-Wit: ${timur} WIT
-
-*FEATURES*
-*OPEN AI BOT*
-${symbol1} ${prefix}ai [text]
-
-*GROUP*
-${symbol1} ${prefix}linkgroup 
-${symbol1} ${prefix}ephemeral [option] 
-${symbol1} ${prefix}setppgc [image] 
-${symbol1} ${prefix}setname [text] 
-${symbol1} ${prefix}setdesc [text] 
-${symbol1} ${prefix}group [option] 
-${symbol1} ${prefix}editinfo [option] 
-${symbol1} ${prefix}add 628xxx
-${symbol1} ${prefix}kick @user 
-${symbol1} ${prefix}hidetag [text] 
-${symbol1} ${prefix}tagall [text] 
-${symbol1} ${prefix}totag [reply] 
-${symbol1} ${prefix}antilink [on/off] 
-${symbol1} ${prefix}mute [on/off] 
-${symbol1} ${prefix}promote @user 
-${symbol1} ${prefix}demote @user 
-${symbol1} ${prefix}vote [text] 
-${symbol1} ${prefix}devote 
-${symbol1} ${prefix}upvote 
-${symbol1} ${prefix}cekvote 
-${symbol1} ${prefix}hapusvote 
-
-*CONVERT*
-${symbol1} ${prefix}sticker [image] 
-${symbol1} ${prefix}stickergif [gif] 
-${symbol1} ${prefix}stickerwm [image] 
-${symbol1} ${prefix}smeme [image] 
-${symbol1} ${prefix}emojimix [emoji1+emoji2] 
-
-*DOWNLOADER*
-${symbol1} ${prefix}ytmp3 [url]
-${symbol1} ${prefix}tiktokdl [url] 
-${symbol1} ${prefix}ttdl [url]
-${symbol1} ${prefix}fbdl [url]
-${symbol1} ${prefix}fbmp4 [url]
-${symbol1} ${prefix}pinterest [gambar yang ingin dicari]
-
-
-*OWNER*
-${symbol1} ${prefix}self 
-${symbol1} ${prefix}public 
-${symbol1} ${prefix}delete (msg) `;
+Wit: ${timur} WIT`;
           let buttons = [
             {
-              buttonId: `rules`,
-              buttonText: { displayText: "Rules" },
+              buttonId: `cmd`,
+              buttonText: { displayText: "Menu" },
               type: 1,
             },
             {
@@ -1023,6 +662,90 @@ ${symbol1} ${prefix}delete (msg) `;
           };
           abot.sendMessage(m.chat, buttonMessage, { quoted: ftroli });
         }
+        break;
+
+      case "cmd":
+        {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
+          abot.sendMessage(from, listMenuMessage);
+        }
+        break;
+
+      case "allmenu":
+        if (cekUser("id", sender) == null) return reply(mess.notregist);
+        sendAbotMessage(from, {
+          text: `Hai Kak @${sender.split("@")[0]}\n\n${allmenu(
+            prefix,
+            hituet
+          )}`,
+        });
+        break;
+
+      case "ownermenu":
+        if (cekUser("id", sender) == null) return reply(mess.notregist);
+        sendAbotMessage(from, {
+          text: `Hai Kak @${sender.split("@")[0]}\n\n${ownermenu(
+            prefix,
+            hituet
+          )}`,
+          mentions: [sender],
+          contextInfo: {
+            mentionedJid: [sender],
+          },
+        });
+        break;
+
+      case "groupmenu":
+        if (cekUser("id", sender) == null) return reply(mess.notregist);
+        sendAbotMessage(from, {
+          text: `Hai Kak @${sender.split("@")[0]}\n\n${groupmenu(
+            prefix,
+            hituet
+          )}`,
+          mentions: [sender],
+          contextInfo: {
+            mentionedJid: [sender],
+          },
+        });
+        break;
+
+      case "openai":
+        if (cekUser("id", sender) == null) return reply(mess.notregist);
+        sendAbotMessage(from, {
+          text: `Hai Kak @${sender.split("@")[0]}\n\n${openai(prefix, hituet)}`,
+          mentions: [sender],
+          contextInfo: {
+            mentionedJid: [sender],
+          },
+        });
+        break;
+
+      case "downloadmenu":
+        if (cekUser("id", sender) == null) return reply(mess.notregist);
+        sendAbotMessage(from, {
+          text: `Hai Kak @${sender.split("@")[0]}\n\n${downloadmenu(
+            prefix,
+            hituet
+          )}`,
+          mentions: [sender],
+          contextInfo: {
+            mentionedJid: [sender],
+          },
+        });
+        break;
+
+      case "convertmenu":
+        if (cekUser("id", sender) == null) return reply(mess.notregist);
+        sendAbotMessage(from, {
+          text: `Hai Kak @${sender.split("@")[0]}\n\n${convertmenu(
+            prefix,
+            hituet
+          )}`,
+          mentions: [sender],
+          contextInfo: {
+            mentionedJid: [sender],
+          },
+        });
         break;
 
       // Owner
@@ -1164,6 +887,7 @@ Gopay: 08126915328`;
       case "req":
       case "request":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!text) throw `Example : ${prefix + command} Fitur Min`;
           let ownernya = owner + "@s.whatsapp.net";
           let me = m.sender;
@@ -1196,12 +920,14 @@ Gopay: 08126915328`;
       case "checklimit":
       case "limit":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           m.reply("*Your limit:* " + db.data.users[m.sender].limit);
         }
         break;
       // Features
       case "afk":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           let user = global.db.data.users[m.sender];
           user.afkTime = +new Date();
           user.afkReason = text;
@@ -1212,6 +938,7 @@ Gopay: 08126915328`;
       case "linkgroup":
       case "linkgc":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           let response = await abot.groupInviteCode(m.chat);
@@ -1226,6 +953,7 @@ Gopay: 08126915328`;
 
       case "ephemeral":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           if (!isAdmins) throw mess.admin;
@@ -1287,6 +1015,7 @@ Gopay: 08126915328`;
               m
             );
           }
+          db.data.users[m.sender].limit -= 1;
         }
         break;
 
@@ -1294,6 +1023,7 @@ Gopay: 08126915328`;
       case "setppgrup":
       case "setppgc":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isAdmins) throw mess.admin;
           if (!/image/.test(mime))
@@ -1305,12 +1035,14 @@ Gopay: 08126915328`;
             .updateProfilePicture(m.chat, { url: media })
             .catch((err) => fs.unlinkSync(media));
           m.reply(mess.success);
+          db.data.users[m.sender].limit -= 1;
         }
         break;
 
       case "setname":
       case "setsubject":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           if (!isAdmins) throw mess.admin;
@@ -1319,11 +1051,13 @@ Gopay: 08126915328`;
             .groupUpdateSubject(m.chat, text)
             .then((res) => m.reply(mess.success))
             .catch((err) => m.reply(jsonformat(err)));
+          db.data.users[m.sender].limit -= 1;
         }
         break;
       case "setdesc":
       case "setdesk":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           if (!isAdmins) throw mess.admin;
@@ -1332,10 +1066,12 @@ Gopay: 08126915328`;
             .groupUpdateDescription(m.chat, text)
             .then((res) => m.reply(mess.success))
             .catch((err) => m.reply(jsonformat(err)));
+          db.data.users[m.sender].limit -= 1;
         }
         break;
       case "setppbot":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!isCreator) throw mess.owner;
           if (!/image/.test(mime))
             throw `Kirim/Reply Image Dengan Caption ${prefix + command}`;
@@ -1351,6 +1087,7 @@ Gopay: 08126915328`;
 
       case "vote":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (m.chat in vote)
             throw `_Masih ada vote di chat ini!_\n\n*${prefix}hapusvote* - untuk menghapus vote`;
@@ -1408,6 +1145,7 @@ Gopay: 08126915328`;
         break;
       case "upvote":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!(m.chat in vote))
             throw `_*tidak ada voting digrup ini!*_\n\n*${prefix}vote* - untuk memulai vote`;
@@ -1460,6 +1198,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
         break;
       case "devote":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!(m.chat in vote))
             throw `_*tidak ada voting digrup ini!*_\n\n*${prefix}vote* - untuk memulai vote`;
@@ -1512,6 +1251,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
         break;
 
       case "cekvote":
+        if (cekUser("id", sender) == null) return reply(mess.notregist);
         if (!m.isGroup) throw mess.group;
         if (!(m.chat in vote))
           throw `_*tidak ada voting digrup ini!*_\n\n*${prefix}vote* - untuk memulai vote`;
@@ -1544,6 +1284,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
       case "delvote":
       case "hapusvote":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!(m.chat in vote))
             throw `_*tidak ada voting digrup ini!*_\n\n*${prefix}vote* - untuk memulai vote`;
@@ -1554,6 +1295,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
       case "group":
       case "grup":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           if (!isAdmins) throw mess.admin;
@@ -1592,6 +1334,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
         break;
       case "editinfo":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           if (!isAdmins) throw mess.admin;
@@ -1630,6 +1373,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
         break;
       case "antilink":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           if (!isAdmins) throw mess.admin;
@@ -1668,6 +1412,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
         break;
       case "mute":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           if (!isAdmins) throw mess.admin;
@@ -1707,6 +1452,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
 
       case "kick":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           if (!isAdmins) throw mess.admin;
@@ -1723,6 +1469,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
         break;
       case "add":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           if (!isAdmins) throw mess.admin;
@@ -1739,6 +1486,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
         break;
       case "promote":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           if (!isAdmins) throw mess.admin;
@@ -1755,6 +1503,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
         break;
       case "demote":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           if (!isAdmins) throw mess.admin;
@@ -1774,6 +1523,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
       case "setppgrup":
       case "setppgc":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isAdmins) throw mess.admin;
           if (!/image/.test(mime))
@@ -1790,6 +1540,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
 
       case "tagall":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           if (!isAdmins) throw mess.admin;
@@ -1808,6 +1559,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
         break;
       case "hidetag":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           if (!isAdmins) throw mess.admin;
@@ -1820,6 +1572,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
         break;
       case "totag":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (!m.isGroup) throw mess.group;
           if (!isBotAdmins) throw mess.botAdmin;
           if (!isAdmins) throw mess.admin;
@@ -1837,6 +1590,8 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
       case "stickergif":
       case "sgif":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
+          if (db.data.users[m.sender].limit < 1) return reply(mess.endLimit);
           if (/image/.test(mime)) {
             m.reply(mess.wait);
             let media = await abot.downloadMediaMessage(qmsg);
@@ -1861,6 +1616,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
               }\nDurasi Video/Gif 1-9 Detik`
             );
           }
+          db.data.users[m.sender].limit -= 1;
         }
         break;
       case "stickerwm":
@@ -1868,6 +1624,8 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
       case "stickergifwm":
       case "sgifwm":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
+          if (db.data.users[m.sender].limit < 1) return reply(mess.endLimit);
           let [teks1, teks2] = text.split`|`;
           if (!teks1)
             throw `Kirim/reply image/video dengan caption ${
@@ -1899,6 +1657,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
               prefix + command
             }\nDurasi Video 1-9 Detik`;
           }
+          db.data.users[m.sender].limit -= 1;
         }
         break;
       case "smeme":
@@ -1907,6 +1666,8 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
       case "stickermeme":
       case "stikermeme":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
+          if (db.data.users[m.sender].limit < 1) return reply(mess.endLimit);
           if (!text)
             throw `Kirim/reply image/video dengan caption ${
               prefix + command
@@ -1931,10 +1692,13 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
               prefix + command
             }\nDurasi Video 1-9 Detik`;
           }
+          db.data.users[m.sender].limit -= 1;
         }
         break;
       case "emojimix":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
+          if (db.data.users[m.sender].limit < 1) return reply(mess.endLimit);
           let [emoji1, emoji2] = text.split`+`;
           if (!emoji1) throw `Example : ${prefix + command} 😅+🤔`;
           if (!emoji2) throw `Example : ${prefix + command} 😅+🤔`;
@@ -1951,11 +1715,14 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
             });
             await fs.unlinkSync(encmedia);
           }
+          db.data.users[m.sender].limit -= 1;
         }
         break;
       //Fiture Downloader
       case "ytmp3":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
+          if (db.data.users[m.sender].limit < 1) return reply(mess.endLimit);
           if (!url) throw `Example : ${prefix + command} url`;
           let ytmp3 = await fetchJson(
             `https://saipulanuar.ga/api/download/ytmp3?url=${url}`
@@ -1976,6 +1743,7 @@ _Sedang mengirim audio..._`);
             },
             { quoted: m }
           );
+          db.data.users[m.sender].limit -= 1;
         }
         break;
 
@@ -1983,6 +1751,8 @@ _Sedang mengirim audio..._`);
       case "ttmp4":
       case "ttdl":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
+          if (db.data.users[m.sender].limit < 1) return reply(mess.endLimit);
           if (!url) throw `masukan command ${prefix + command} url`;
           let ttdl = await fetchJson(
             `https://saipulanuar.ga/api/download/tiktok?url=${url}`
@@ -2001,12 +1771,15 @@ _Sedang mengirim video..._`);
             },
             { quoted: m }
           );
+          db.data.users[m.sender].limit -= 1;
         }
         break;
 
       case "fbdl":
       case "fbmp4":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
+          if (db.data.users[m.sender].limit < 1) return reply(mess.endLimit);
           if (!url) throw `masukan command ${prefix + command} url`;
           let fbdl = await fetchJson(
             `https://saipulanuar.ga/api/download/fb?url=${url}`
@@ -2024,12 +1797,15 @@ _Sedang mengirim video..._`);
             },
             { quoted: m }
           );
+          db.data.users[m.sender].limit -= 1;
         }
         break;
       // Fiture Search
 
       case "pinterest":
         {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
+          if (db.data.users[m.sender].limit < 1) return reply(mess.endLimit);
           if (!text) throw `masukan command ${prefix + command} query`;
           m.reply(mess.wait);
           let { pinterest } = require("./lib/scraper");
@@ -2040,26 +1816,14 @@ _Sedang mengirim video..._`);
             { image: { url: result }, caption: "• Media Url : " + result },
             { quoted: m }
           );
+          db.data.users[m.sender].limit -= 1;
         }
         break;
 
-      case "ytsearch": {
-        if (!text) throw "masukan command ${prefix + command } query";
-        let txtsearch = text;
-        let ytsearch = await fetchJson(
-          `https://saipulanuar.ga/api/yt/search?query=${txtsearch}`
-        );
-        reply(`*FACEBOOK DOWNLOAD*
-*Judul:* ${ytsearch.result.title}
-*Descriptions:* ${ytsearch.result.description}
-*Thumbnail:* ${ytsearch.result.thumbnail}
-*Duration:* ${ytsearch.result.timestamp}
-*Url :* ${ytsearch.result.url}
-`);
-      }
-
       //Ai Fiture
       case "ai":
+        if (cekUser("id", sender) == null) return reply(mess.notregist);
+        if (db.data.users[m.sender].limit < 1) return reply(mess.endLimit);
         try {
           if (setting.keyopenai === "ISI_APIKEY_OPENAI_DISINI")
             return reply(
@@ -2087,6 +1851,7 @@ _Sedang mengirim video..._`);
         } catch (err) {
           console.log(err);
           m.reply("Maaf, sepertinya ada yang error");
+          db.data.users[m.sender].limit -= 1;
         }
         break;
 
@@ -2107,21 +1872,37 @@ _Sedang mengirim video..._`);
         }
         break;
 
-      case "delete":
-      case "del":
+      case "join":
         {
-          if (!m.quoted) throw false;
-          let { chat, fromMe, id, isBaileys } = m.quoted;
-          if (!isBaileys) throw "Pesan tersebut bukan dikirim oleh bot!";
-          abot.sendMessage(m.chat, {
-            delete: {
-              remoteJid: m.chat,
-              fromMe: true,
-              id: m.quoted.id,
-              participant: m.quoted.sender,
-            },
-          });
+          if (!isOwner) return reply(mess.owner);
+          if (!text) return reply(`Contoh ${prefix + command} linkgc`);
+          if (!isUrl(args[0]) && !args[0].includes("whatsapp.com"))
+            return reply("Link Invalid!");
+          let result = args[0].split("https://chat.whatsapp.com/")[1];
+          await abot
+            .groupAcceptInvite(result)
+            .then((res) => reply(jsonformat(res)))
+            .catch((err) => reply(jsonformat(err)));
         }
+        break;
+
+      case "addprem":
+        if (!isOwner) return reply(mess.owner);
+        if (!args[0])
+          return reply(
+            `Penggunaan ${prefix + command} nomor\nContoh ${
+              prefix + command
+            } 6285807264974`
+          );
+        prrkek = q.split("|")[0].replace(/[^0-9]/g, "") + `@s.whatsapp.net`;
+        let ceknya = await kayla.onWhatsApp(prrkek);
+        if (ceknya.length == 0)
+          return reply(
+            `Masukkan Nomor Yang Valid Dan Terdaftar Di WhatsApp!!!`
+          );
+        prem.push(prrkek);
+        fs.writeFileSync("./database/premium.json", JSON.stringify(prem));
+        reply(`Nomor ${prrkek} Telah Menjadi Premium!`);
         break;
       // End Cmd
       default:
