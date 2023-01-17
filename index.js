@@ -120,22 +120,13 @@ console.log(color(figlet.textSync('Ahmuq', {
 store.bind(abot.ev)
 abot.ev.on("messages.upsert", async ({ messages, type }) => {         
     if(type === "notify"){
-        if(!messages[0].key.fromMe) {
-            //tentukan jenis pesan berbentuk text                
+        if(!messages[0].key.fromMe) {         
             const pesan = messages[0].message.conversation;
-            //tentukan jenis pesan apakah bentuk list
             const responseList = messages[0].message.listResponseMessage;        
-            //tentukan jenis pesan apakah bentuk button
             const responseButton = messages[0].message.buttonsResponseMessage;
-            //tentukan jenis pesan apakah bentuk templateButtonReplyMessage
-            //const responseReplyButton = messages[0].message.templateButtonReplyMessage;     
-            //nowa dari pengirim pesan sebagai id
             const noWa = messages[0].key.remoteJid;
-
-
             await abot.readMessages([messages[0].key]);
 
-            //kecilkan semua pesan yang masuk lowercase 
             const pesanMasuk = pesan.toLowerCase();
 
             if(!messages[0].key.fromMe && pesanMasuk === "halo"){

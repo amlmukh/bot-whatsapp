@@ -21,6 +21,7 @@ const util = require("util");
 const chalk = require("chalk");
 const timeZone = require("moment-timezone");
 const ffmpegPath = require("@ffmpeg-installer/ffmpeg").path;
+
 const ffmpeg = require("fluent-ffmpeg");
 const { Configuration, OpenAIApi } = require("openai");
 ffmpeg.setFfmpegPath(ffmpegPath);
@@ -159,6 +160,7 @@ module.exports = abot = async (abot, m, store, chatUpdate, mek) => {
     const mime = (quoted.msg || quoted).mimetype || "";
     const qmsg = quoted.msg || quoted;
     const from = m.chat;
+    const from1 = m.key.remoteJid;
     const isMedia = /image|video|sticker|audio/.test(
       m.quoted ? m.quoted.mtype : m.mtype
     );
@@ -268,6 +270,23 @@ module.exports = abot = async (abot, m, store, chatUpdate, mek) => {
         };
     } catch (err) {
       console.error(err);
+    }
+
+    async function replyprem(teks) {
+      let buttons = [
+        {
+          buttonId: ".buypremium",
+          buttonText: { displayText: "⬆️ Upgrade Premium" },
+          type: 1,
+        },
+      ];
+      return abot.sendButtonText(
+        m.chat,
+        buttons,
+        teks,
+        `Fiture ini khusus premium`,
+        m
+      );
     }
 
     // OpenAI Setting
@@ -412,18 +431,27 @@ module.exports = abot = async (abot, m, store, chatUpdate, mek) => {
       });
     }
 
+    var mdu = ["red", "green", "yellow", "blue", "magenta", "cyan", "white"];
+    var halalu = mdu[Math.floor(Math.random() * mdu.length)];
+    var mdo = ["red", "green", "yellow", "blue", "magenta", "cyan", "white"];
+    var halalo = mdo[Math.floor(Math.random() * mdo.length)];
+    var mdi = ["red", "green", "yellow", "blue", "magenta", "cyan", "white"];
+    var halali = mdi[Math.floor(Math.random() * mdi.length)];
+    var mda = ["red", "green", "yellow", "blue", "magenta", "cyan", "white"];
+    var halala = mda[Math.floor(Math.random() * mda.length)];
+    var mde = ["red", "green", "yellow", "blue", "magenta", "cyan", "white"];
+    var halale = mde[Math.floor(Math.random() * mde.length)];
+
     // Push Message To Console && Auto Read
     if (m.message) {
       abot.readMessages([m.key]);
       console.log(
-        chalk.black(chalk.bgGreen("[ Chat ]")),
-        chalk.black(chalk.blueBright(new Date())),
-        chalk.black(chalk.greenBright(budy || m.mtype)) +
-          "\n" +
-          chalk.magentaBright("- from"),
-        chalk.blueBright(pushname),
-        chalk.greenBright(m.sender) + "\n" + chalk.blueBright("- in"),
-        chalk.cyanBright(m.isGroup ? pushname : "Private Chat", m.chat)
+        chalk.yellow.bgCyan.bold(" - AHMUQ BOT "),
+        color(`[ PESAN ]`, `${halalu}`),
+        color(`FROM`, `${halalo}`),
+        color(`${pushname}`, `${halali}`),
+        color(`Text :`, `${halala}`),
+        color(`${body}`, `${halale}`)
       );
     }
 
@@ -528,12 +556,12 @@ Selama ${clockString(new Date() - user.afkTime)}`
       {
         title: `𝐒𝐈𝐋𝐀𝐇𝐊𝐀𝐍 𝐏𝐈𝐋𝐈𝐇 𝐃𝐈 𝐁𝐀𝐖𝐀𝐇`,
         rows: [
-          { title: `⊟ All menu`, rowId: `allmenu` },
-          { title: `⊟ Owner menu`, rowId: `ownermenu` },
-          { title: `⊟ Open AI`, rowId: `openai` },
-          { title: `⊟ Download menu`, rowId: `downloadmenu` },
-          { title: `⊟ Group menu`, rowId: `groupmenu` },
-          { title: `⊟ Converter Menu`, rowId: `convertmenu` },
+          { title: `👌 All menu`, rowId: `allmenu` },
+          { title: ` Owner menu`, rowId: `ownermenu` },
+          { title: `🤖 Open AI`, rowId: `openai` },
+          { title: `🎶 Download menu`, rowId: `downloadmenu` },
+          { title: `📼 Group menu`, rowId: `groupmenu` },
+          { title: `🙌 Converter Menu`, rowId: `convertmenu` },
         ],
       },
     ];
@@ -610,26 +638,22 @@ untuk membaca rules bot
         {
           if (cekUser("id", sender) == null) return reply(mess.notregist);
           let me = m.sender;
+          let usernya = `${("id", db_user).length}`;
           let menu = `
 *Hello ${pushname} 👋, ${sayyingTime}*,`;
           let menunya = `
 *INFO USER*
 Name: ${pushname}
 Nomor: @${me.split("@")[0]}
-User pada database : ${Object.keys(global.db.data.users).length} User
 Premium: ${isPremium ? "✅" : `❌`}
 Limit: ${isPremium ? "Unlimited" : `${db.data.users[m.sender].limit}`}
-User Registered : ${
-            Object.values(global.db.data.users).filter(
-              (user) => user.registered == true
-            ).length
-          } Users
 
 *INFO BOT*
 Nama Bot: ${global.namabot}
 Owner: @${owner.split("@")[0]}
 Mode: ${abot.public ? "Public" : `Self`}
 Prefix:「 MULTI-PREFIX 」
+User pada database : ${usernya} User
 
 *TIME*
 Date: ${hariini}
@@ -637,11 +661,6 @@ Wib: ${barat} WIB
 Wita: ${tengah} WITA
 Wit: ${timur} WIT`;
           let buttons = [
-            {
-              buttonId: `cmd`,
-              buttonText: { displayText: "Menu" },
-              type: 1,
-            },
             {
               buttonId: `donasi`,
               buttonText: { displayText: "Donasi" },
@@ -934,6 +953,291 @@ Gopay: 08126915328`;
           m.reply(`${m.pushName} Telah Afk${text ? ": " + text : ""}`);
         }
         break;
+      // User Menu
+
+      case "buypremium":
+      case "jadiowner":
+      case "sewabot":
+        {
+          const seactiones = [
+            {
+              title: `LIST SEWABOT`,
+              rows: [
+                { title: `1 MINGGU`, rowId: `${prefix}sewakay 1minggu` },
+                { title: `1 BULAN`, rowId: `${prefix}sewakay 1bulan` },
+                { title: `1 TAHUN`, rowId: `${prefix}sewakay 1tahun` },
+                { title: `PERMANENT`, rowId: `${prefix}sewakay permanent` },
+              ],
+            },
+            {
+              title: `LIST PREMIUM`,
+              rows: [
+                { title: `1 MINGGU`, rowId: `${prefix}premkay 1minggu` },
+                { title: `1 BULAN`, rowId: `${prefix}premkay 1bulan` },
+                { title: `1 TAHUN`, rowId: `${prefix}premkay 1tahun` },
+                { title: `PERMANENT`, rowId: `${prefix}premkay permanent` },
+              ],
+            },
+            {
+              title: `LIST JADI OWNER`,
+              rows: [
+                { title: `1 MINGGU`, rowId: `${prefix}ownkay 1minggu` },
+                { title: `1 BULAN`, rowId: `${prefix}ownkay 1bulan` },
+                { title: `1 TAHUN`, rowId: `${prefix}ownkay 1tahun` },
+                { title: `PERMANENT`, rowId: `${prefix}ownkay permanent` },
+              ],
+            },
+          ];
+          const listSw = {
+            text: `Hai ${pushname}`,
+            mentions: [sender],
+            footer: `Mau ${command} ya? Silahkan Pencet Di Bawah Ya Kak`,
+            buttonText: "SELECT",
+            sections: seactiones,
+            listType: 1,
+          };
+          abot.sendMessage(from, listSw, { quoted: m });
+        }
+        break;
+
+      case "sewakay":
+        if (args[0] == "1minggu") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 10K • Sewabot 1 Minggu
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        } else if (args[0] == "1bulan") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 20K • Sewabot 1 Bulan
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        } else if (args[0] == "1tahun") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 35K • Sewabot 1 Tahun
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        } else if (args[0] == "permanent") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 45K • Sewabot Permanent
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        }
+        break;
+
+      case "premkay":
+        if (args[0] == "1minggu") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 10K • Premium 1 Minggu
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        } else if (args[0] == "1bulan") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 20K • Premium 1 Bulan
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        } else if (args[0] == "1tahun") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 35K • Premium 1 Tahun
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        } else if (args[0] == "permanent") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 45K • Premium Permanent
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        }
+        break;
+      case "botkay":
+        if (args[0] == "1minggu") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 10K • Jadibot 1 Minggu
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        } else if (args[0] == "1bulan") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 20K • Jadibot 1 Bulan
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        } else if (args[0] == "1tahun") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 35K • Jadibot 1 Tahun
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        } else if (args[0] == "permanent") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 45K • Jadibot Permanent
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        }
+        break;
+      case "ownkay":
+        if (args[0] == "1minggu") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 10K • Jadi Owner 1 Minggu
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        } else if (args[0] == "1bulan") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 20K • Jadi Owner 1 Bulan
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        } else if (args[0] == "1tahun") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 35K • Jadi Owner 1 Tahun
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        } else if (args[0] == "permanent") {
+          reply(
+            `Pesanan Kamu Sedang Di Proses Oleh Bot, Silahkan Tunggu Nanti Juga Di Chat Owner Untuk Di Konfirmasi`
+          );
+          abot.sendMessage(
+            creator,
+            {
+              text: `*❏ ORDER ❏*
+📮 : *Paket:* 45K • Jadi Owner Permanent
+- @${sender.split("@")[0]}`,
+              mentions: [sender],
+            },
+            { quoted: m }
+          );
+        }
+        break;
+
       // Group
       case "linkgroup":
       case "linkgc":
@@ -1898,6 +2202,22 @@ _Sedang mengirim video..._`);
           setUser("±premium", number_one, true);
           reply(
             `*PREMIUM*\n*ID:* @${number_one.split("@")[0]}\n*Status:* aktif`
+          );
+        }
+        break;
+
+      case "delprem":
+        {
+          if (!isOwner) return reply(mess.OnlyOwner);
+          if (!text) return reply("*Contoh:*\n#delprem 628xxx");
+          var number_one = q + "@s.whatsapp.net";
+          if (cekUser("id", number_one) == null)
+            return reply("User tersebut tidak terdaftar di database");
+          if (cekUser("premium", number_one) == false)
+            return reply("User tersebut tidak premium");
+          setUser("±premium", number_one, false);
+          reply(
+            `*PREMIUM*\n*ID:* @${number_one.split("@")[0]}\n*Status:* tidak`
           );
         }
         break;

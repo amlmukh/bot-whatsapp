@@ -16,6 +16,7 @@ global.apikeyprem = [""];
 global.apikeyvip = ["YOUR APIKEY"];
 global.namabot = ["Ahmuq Bot"];
 global.namaowner = ["Ahlul Mukhramin"];
+global.creator = "628126915328@s.whatsapp.net";
 global.owner = ["628126915328"];
 global.packname = "© Powered By";
 global.author = "Abot";
