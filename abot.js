@@ -557,7 +557,7 @@ Selama ${clockString(new Date() - user.afkTime)}`
         title: `𝐒𝐈𝐋𝐀𝐇𝐊𝐀𝐍 𝐏𝐈𝐋𝐈𝐇 𝐃𝐈 𝐁𝐀𝐖𝐀𝐇`,
         rows: [
           { title: `👌 All menu`, rowId: `allmenu` },
-          { title: ` Owner menu`, rowId: `ownermenu` },
+          { title: `📼 Owner menu`, rowId: `ownermenu` },
           { title: `🤖 Open AI`, rowId: `openai` },
           { title: `🎶 Download menu`, rowId: `downloadmenu` },
           { title: `📼 Group menu`, rowId: `groupmenu` },
