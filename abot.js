@@ -2104,6 +2104,31 @@ _Sedang mengirim video..._`);
         }
         break;
 
+      case "igdl":
+      case "instagramdl":
+      case "instadl":
+        {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
+          if (db.data.users[m.sender].limit < 1) return reply(mess.endLimit);
+          if (!url) throw `masukan command ${prefix + command} url`;
+          let igdl = await fetchJson(
+            `https://saipulanuar.ga/api/downloader/instagram?url=${url}`
+          );
+          reply(`*INSTAGRAM DOWNLOADER*
+*title:* ${igdl.result.title}
+_Sedang mengirim video..._`);
+          abot.sendMessage(
+            m.chat,
+            {
+              image: { url: igdl.result.url },
+              caption: `Done`,
+            },
+            { quoted: m }
+          );
+          db.data.users[m.sender].limit -= 1;
+        }
+        break;
+
       case "fbdl":
       case "fbmp4":
         {
