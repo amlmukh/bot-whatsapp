@@ -12,6 +12,8 @@ const {
   getContentType,
 } = require("@adiwajshing/baileys");
 
+const { pinterest, downloadMp3 } = require("./lib/scraper");
+const yts = require("./lib/yt-search");
 const fs = require("fs");
 const os = require("os");
 const speed = require("performance-now");
@@ -2028,7 +2030,31 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
         }
         break;
       //Fiture Downloader
+      case "ytmp4":
+      case "mp4":
+        {
+          if (cekUser("id", sender) == null) return reply(mess.notregist);
+          if (db.data.users[m.sender].limit < 1) return reply(mess.endLimit);
+          if (!url) throw `Example : ${prefix + command} url`;
+          let ytmp4 = await fetchJson(
+            `https://saipulanuar.ga/api/download/ytmp4?url=${url}`
+          );
+          reply(mess.waitdl);
+          abot.sendMessage(
+            m.chat,
+            {
+              video: { url: ytmp4.result.url },
+              mimetype: "video/mp4",
+              caption: `Done`,
+            },
+            { quoted: m }
+          );
+          db.data.users[m.sender].limit -= 1;
+        }
+        break;
+
       case "ytmp3":
+      case "mp3":
         {
           if (cekUser("id", sender) == null) return reply(mess.notregist);
           if (db.data.users[m.sender].limit < 1) return reply(mess.endLimit);
@@ -2036,13 +2062,7 @@ ${vote[m.chat][2].map((v, i) => `├ ${i + 1}. @${v.split`@`[0]}`).join("\n")}
           let ytmp3 = await fetchJson(
             `https://saipulanuar.ga/api/download/ytmp3?url=${url}`
           );
-          reply(`*YTMP3 DOWNLOAD*
-*title:* ${ytmp3.result.title}
-*channel:* ${ytmp3.result.channel}
-*published:* ${ytmp3.result.published}
-*views:* ${ytmp3.result.views}
-*type:* audio/mp3
-_Sedang mengirim audio..._`);
+          reply(mess.waitdl);
           abot.sendMessage(
             m.chat,
             {
@@ -2117,7 +2137,6 @@ _Sedang mengirim video..._`);
           if (db.data.users[m.sender].limit < 1) return reply(mess.endLimit);
           if (!text) throw `masukan command ${prefix + command} query`;
           m.reply(mess.wait);
-          let { pinterest } = require("./lib/scraper");
           anu = await pinterest(text);
           result = anu[Math.floor(Math.random() * anu.length)];
           abot.sendMessage(
@@ -2126,6 +2145,80 @@ _Sedang mengirim video..._`);
             { quoted: m }
           );
           db.data.users[m.sender].limit -= 1;
+        }
+        break;
+      case "play":
+        {
+          if (!text)
+            return reply(`Example : ${prefix + command} story wa anime`);
+          let search = await yts(text);
+          url = search.videos[0].url;
+          let anu =
+            search.videos[Math.floor(Math.random() * search.videos.length)];
+          eek = await getBuffer(anu.thumbnail);
+          owned = "Ahlul Mukhramin";
+          ngen = `
+Title : ${anu.title}
+Ext : Search
+ID : ${anu.videoId}
+Viewers : ${anu.views}
+Upload At : ${anu.ago}
+Author : ${anu.author.name}
+Channel : ${anu.author.url}`;
+          let buttonse = [
+            {
+              buttonId: `${prefix}mp4 ${anu.url}`,
+              buttonText: { displayText: `Video` },
+              type: 1,
+            },
+            {
+              buttonId: `${prefix}mp3 ${anu.url}`,
+              buttonText: { displayText: `Audio` },
+              type: 1,
+            },
+          ];
+          let buttonMessages = {
+            image: eek,
+            jpegThumbnail: eek,
+            caption: ngen,
+            fileLength: "99999999999",
+            mentions: [sender, owned],
+            footer: `_Powered By @${owned.split("@")[0]}_`,
+            buttons: buttonse,
+            headerType: 4,
+            contextInfo: {
+              mentionedJid: [sender, owned],
+              externalAdReply: {
+                showAdAttribution: true,
+                renderLargerThumbnail: true,
+                title: `Hai Kak ${pushname}`,
+                containsAutoReply: true,
+                mediaType: 1,
+                thumbnail: eek,
+                mediaUrl: "https://chat.whatsapp.com/KG9EraduWh2Bz3mdWbkHjl",
+                sourceUrl: "https://chat.whatsapp.com/KG9EraduWh2Bz3mdWbkHjl",
+              },
+            },
+          };
+          abot.sendMessage(m.chat, buttonMessages, {
+            quoted: {
+              key: {
+                fromMe: false,
+                participant: `0@s.whatsapp.net`,
+                remoteJid: "6281903153426-1626053991@g.us",
+              },
+              message: {
+                orderMessage: {
+                  itemCount: 99999999,
+                  status: 1,
+                  surface: 1,
+                  message: "Created By Abot",
+                  orderTitle: "999999999",
+                  sellerJid: `0@s.whatsapp.net`,
+                },
+              },
+            },
+          });
         }
         break;
 
